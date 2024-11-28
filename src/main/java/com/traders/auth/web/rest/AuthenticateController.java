@@ -1,6 +1,7 @@
 package com.traders.auth.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.traders.auth.security.CustomUserDetails;
 import com.traders.auth.web.rest.model.LoginVM;
 import com.traders.common.security.SecurityUtils;
 import jakarta.validation.Valid;
@@ -80,7 +81,8 @@ public class AuthenticateController {
 
     public String createToken(Authentication authentication, boolean rememberMe) {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
-
+        CustomUserDetails userDetails= (CustomUserDetails) authentication.getPrincipal();
+        String userId = userDetails.getUserId();
         Instant now = Instant.now();
         Instant validity;
         if (rememberMe) {
@@ -95,6 +97,7 @@ public class AuthenticateController {
             .expiresAt(validity)
             .subject(authentication.getName())
             .claim(SecurityUtils.AUTHORITIES_KEY, authorities)
+            .claim("userId", userId)
             .build();
 
         JwsHeader jwsHeader = JwsHeader.with(SecurityUtils.JWT_ALGORITHM).build();

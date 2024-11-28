@@ -4,6 +4,8 @@ import com.traders.auth.domain.Authority;
 import com.traders.auth.domain.User;
 import com.traders.auth.exception.UserNotActivatedException;
 import com.traders.auth.repository.UserRepository;
+import com.traders.common.utils.EncryptionUtil;
+import lombok.SneakyThrows;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +51,8 @@ public class UserAuthenticationService implements UserDetailsService {
             .map(user -> createSpringSecurityUser(lowercaseLogin, user))
             .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database"));
     }
-
-    private org.springframework.security.core.userdetails.User createSpringSecurityUser(String lowercaseLogin, User user) {
+    @SneakyThrows
+    private CustomUserDetails createSpringSecurityUser(String lowercaseLogin, User user) {
         if (!user.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
@@ -60,6 +62,7 @@ public class UserAuthenticationService implements UserDetailsService {
             .map(Authority::getName)
             .map(SimpleGrantedAuthority::new)
             .toList();
-        return new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);
+        var userDetails = new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);
+        return new CustomUserDetails(EncryptionUtil.encrypt(user.getId().toString()),userDetails);
     }
 }
