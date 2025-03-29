@@ -87,6 +87,7 @@
     <springProperty name="log.level" source="logging.level.root" defaultValue="INFO" />
     <root level="${log.level}">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
     </root>
 
     <!-- Prevent logback from outputting its own status -->
