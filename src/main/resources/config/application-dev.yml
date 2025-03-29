@@ -19,7 +19,7 @@ logging:
     com.traders.exchange: Info
     com.traders.common: Info
   file:
-    name: "logs/app.log"
+    name: "/tmp/logs/app.log"
     max-history: 5
     max-size: 50MB
 

@@ -12,6 +12,8 @@
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <property name="LOG_PATH" value="/tmp/logs" /> <!-- Directory for logs -->
+    <property name="APP_NAME" value="${spring.application.name:-app}" /> <!-- Dynamic app name from Spring -->
 
     <!-- The FILE and ASYNC appenders are here as examples for a production configuration -->
 
@@ -20,6 +22,19 @@
     <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>512</queueSize>
         <appender-ref ref="FILE"/>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize> <!-- Roll over after 10MB -->
+            <maxHistory>3</maxHistory> <!-- Keep 30 days of history -->
+            <totalSizeCap>1GB</totalSizeCap> <!-- Total log size limit -->
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
     </appender>
 
     <root level="${logging.level.root}">
