@@ -20,19 +20,19 @@ liquibase {
   activities {
     main {
       driver "com.mysql.cj.jdbc.Driver"
-      //url "jdbc:mysql://35.224.30.62:3306/hello_traders"
-      url "jdbc:mysql://google/hello_traders?cloudSqlInstance=true-oasis-439517-g0:us-central1:hello-traders&socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-      username "root"
+      url "jdbc:mysql://35.224.30.62:3306/hello_traders"
+      //url "jdbc:mysql://google/hello_traders?cloudSqlInstance=true-oasis-439517-g0:us-central1:hello-traders&socketFactory=com.google.cloud.sql.mysql.SocketFactory"
+      username "system"
       changelogFile "src/main/resources/config/liquibase/master.xml"
       logLevel "debug"
       classpath "src/main/resources/"
     }
     diffLog {
       driver "com.mysql.cj.jdbc.Driver"
-      //url "jdbc:mysql://35.224.30.62:3306/hello_traders"
-      url "jdbc:mysql://google/hello_traders?cloudSqlInstance=true-oasis-439517-g0:us-central1:hello-traders&socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-      username "root"
-      password "root"
+      url "jdbc:mysql://localhost:3306/hello_traders"
+      //url "jdbc:mysql://google/hello_traders?cloudSqlInstance=true-oasis-439517-g0:us-central1:hello-traders&socketFactory=com.google.cloud.sql.mysql.SocketFactory"
+      username "system"
+      password "systemuser"
       changelogFile project.ext.diffChangelogFile
       referenceUrl "hibernate:spring:com.traders.authService.domain?dialect=org.hibernate.dialect.MySQL8Dialect&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
       logLevel "debug"

@@ -20,35 +20,47 @@ spring:
       on-profile: '!api-docs'
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
+  swagger-ui:
+    enabled: true
+  show-actuator: true
+  packages-to-scan: '*'
+  swagger-ui.path : /swagger-ui.html
+
 ---
 feign:
   circuitbreaker:
     enabled: true
     client:
-     config:
-       default:
-         connectTimeout: 5000
-         readTimeout: 5000
+      config:
+        default:
+          connectTimeout: 5000
+          readTimeout: 5000
 management:
+  audit:
+    events:
+      enabled: true
   endpoints:
     web:
       base-path: /management
       exposure:
-        include:
-          - configprops
-          - env
-          - health
-          - info
-          - jhimetrics
-          - jhiopenapigroups
-          - logfile
-          - loggers
-          - prometheus
-          - threaddump
-          - caches
-          - liquibase
+        include: "*"
   endpoint:
+    auditevents:
+      enabled: true
+    shutdown:
+      enabled: true
+    restart:
+      enabled: true
+    env:
+      show-values: ALWAYS
+      post:
+        enabled: true
+      configprops:
+        show-values: ALWAYS
+      info:
+        env:
+          enabled: true
     health:
       show-details: always
       #roles: 'ROLE_ADMIN'
@@ -90,6 +102,9 @@ management:
     key-values:
       application: ${spring.application.name}
   metrics:
+    export:
+      simple:
+        enabled: true
     enable:
       http: true
       jvm: true
@@ -121,11 +136,11 @@ spring:
       config:
         watch:
           enabled: false
-#  docker:
-#    compose:
-#      enabled: true
-#      lifecycle-management: start-only
-#      file: src/main/docker/mysql.yml
+  #  docker:
+  #    compose:
+  #      enabled: true
+  #      lifecycle-management: start-only
+  #      file: src/main/docker/mysql.yml
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by gradle when building the JAR file
@@ -242,4 +257,4 @@ config:
 
 # application:
 gateway:
-  url: https://gateway-dot-true-oasis-439517-g0.el.r.appspot.com/
+  url: http://localhost:8080/

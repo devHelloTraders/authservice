@@ -13,13 +13,42 @@
 
 logging:
   level:
-    ROOT: DEBUG
-    com.traders.authService.appconfig: DEBUG
-    org.hibernate.SQL: DEBUG
-    com.traders.authService: DEBUG
-
+    ROOT: Info
+    com.traders.exchange.appconfig: Info
+    org.springframework.boot.actuate: Info
+    com.traders.exchange: Info
+    com.traders.common: Info
+  file:
+    name: "logs/app.log"
+    max-history: 5
+    max-size: 50MB
 
 management:
+  audit:
+    events:
+      enabled: true
+  endpoint:
+    auditevents:
+      enabled: true
+    shutdown:
+      enabled: true
+    restart:
+      enabled: true
+    env:
+      show-values: ALWAYS
+      post:
+        enabled: true
+    configprops:
+      show-values: ALWAYS
+      post:
+        enabled: true
+      info:
+        env:
+          enabled: true
+  trace:
+    http:
+      enabled: true  # Enable HTTP tracing
+      include: request-headers,response-headers,errors,time-taken
   zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
@@ -28,6 +57,22 @@ management:
       probability: 1.0 # report 100% of traces
 
 spring:
+#  boot:
+#    admin:
+#      client:
+#        url: http://localhost:8090
+#        username: admin
+#        password: admin
+  #        instance:
+  #          metadata:
+  #            user:
+  #              name: ${spring.security.user.name}
+  #              password: ${spring.security.user.password}
+  #  security:
+  #    user:
+  #      name: exchange
+  #      password: exchange
+
   devtools:
     restart:
       enabled: true
@@ -53,36 +98,36 @@ spring:
       discovery:
         register-health-check: true
         healthCheckPath: /management/health
-        healthCheckInterval: 60s
-#        health-check:
-#          enabled: true
-#          interval: 10s
-#          timeout: 1s
-#          http:
-#            method: GET
-#            path: /management/health
+        healthCheckInterval: 30s
+        health-check:
+          enabled: true
+          interval: 10s
+          timeout: 3s
+          http:
+            method: GET
+            path: /management/health
         enabled: true
-        prefer-ip-address: false
-        hostname: authservice-dot-true-oasis-439517-g0.el.r.appspot.com
-        scheme: https
-        port: 443
+        prefer-ip-address: true
+        #        hostname: authservice-dot-true-oasis-439517-g0.el.r.appspot.com
+        scheme: http
+        #        port: 443
         tags:
           - profile=${spring.profiles.active}
           - version='@project.version@'
           - git-version=${git.commit.id.describe:}
           - git-commit=${git.commit.id.abbrev:}
           - git-branch=${git.branch:}
-      host: consul-585407576955.us-central1.run.app
-      port: 443
-#      host: localhost
-#      port: 8500
-      scheme: https
+      #      host: consul-585407576955.us-central1.run.app
+      #      port: 443
+      host: localhost
+      port: 8500
+      scheme: http
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    #url: jdbc:mysql://localhost:3306/hello_traders?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
-    url: jdbc:mysql://google/hello_traders?cloudSqlInstance=true-oasis-439517-g0:us-central1:hello-traders&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=root&password=root
-    username: root
-    password: root
+    url: jdbc:mysql://localhost:3306/hello_traders?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    #url: jdbc:mysql://google/hello_traders?cloudSqlInstance=true-oasis-439517-g0:us-central1:hello-traders&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=root&password=root
+    username: system
+    password: systemuser
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       poolName: Hikari
@@ -112,15 +157,20 @@ server:
 # ===================================================================
 
 config:
+
+  redis:
+    session:
+      ttl: 300
   cache: # Cache configuration
     redis: # Redis configuration
-      expiration: 3600 # By default objects stay 1 hour (in seconds) in the cache
-      server: redis://default:HelloTraders%40123@redis-16705.c244.us-east-1-2.ec2.redns.redis-cloud.com:16705
+      expiration: -1 # By default objects stay 1 hour (in seconds) in the cache
+      #server: redis://default:HelloTraders%40123@redis-16705.c244.us-east-1-2.ec2.redns.redis-cloud.com:16705
+      server: redis://localhost:6379
       cluster: false
-#        server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
-#        cluster: true
-#  # CORS is disabled by default on microservices, as you should access them through a gateway.
-#  # If you want to enable it, please uncomment the configuration below.
+  #        server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
+  #        cluster: true
+  #  # CORS is disabled by default on microservices, as you should access them through a gateway.
+  #  # If you want to enable it, please uncomment the configuration below.
   # cors:
   #   allowed-origins: "http://localhost:9000,https://localhost:9000"
   #   allowed-methods: "*"
@@ -131,9 +181,9 @@ config:
   security:
     authentication:
       jwt:
-#        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+        #        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
         base64-secret: YmYyOGZmZGEzMWY5OGIxNjZlMDczZmQ1OWM2ZjhiMmJhYzRjNGM5NWViODQwYzQ0MTEyYWM2NDYwZTRhMzkxYzQ2YzVjYzIyZjJlOGFiNWRjYzk4MWEyMTdjMjI0MDJhY2Q3ODA1OWQwZjQ3NWI1YjlkNzIwZThmNTAzYWRiYTY=
-#        # Token is valid 24 hours
+        #        # Token is valid 24 hours
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   logging:

@@ -21,7 +21,7 @@ public class SecurityConfiguration extends com.traders.common.config.SecurityCon
 
 
 
-    @Override
+   /* @Override
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         //Make the below setting as * to allow connection from any hos
@@ -33,7 +33,7 @@ public class SecurityConfiguration extends com.traders.common.config.SecurityCon
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
-    }
+    }*/
 
 
 

@@ -107,7 +107,7 @@ configurations {
 dependencies {
 	implementation "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
 	implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-
+	implementation 'de.codecentric:spring-boot-admin-starter-client:3.3.4'
 	implementation "org.springframework.boot:spring-boot-starter-undertow"
 	modules {
 		module("org.springframework.boot:spring-boot-starter-tomcat") {
@@ -170,8 +170,8 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-
-	implementation 'com.traders.hello:commonService:0.0.1-SNAPSHOT'
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
+	implementation 'com.traders.hello:commonService:1.0.2-SNAPSHOT'
 	implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.21.0'
 
 	implementation 'io.opencensus:opencensus-impl:0.31.0'

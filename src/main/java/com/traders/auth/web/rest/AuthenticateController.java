@@ -1,7 +1,9 @@
 package com.traders.auth.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nimbusds.jose.util.Pair;
 import com.traders.auth.security.CustomUserDetails;
+import com.traders.auth.service.RedisService;
 import com.traders.auth.web.rest.model.LoginVM;
 import com.traders.common.security.SecurityUtils;
 import jakarta.validation.Valid;
@@ -25,7 +27,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -44,11 +49,12 @@ public class AuthenticateController {
 
     @Value("${config.security.authentication.jwt.token-validity-in-seconds-for-remember-me:0}")
     private long tokenValidityInSecondsForRememberMe;
-
+    private final RedisService redisService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    public AuthenticateController(JwtEncoder jwtEncoder, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthenticateController(JwtEncoder jwtEncoder, RedisService redisService, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.jwtEncoder = jwtEncoder;
+        this.redisService = redisService;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
 
@@ -90,6 +96,7 @@ public class AuthenticateController {
         } else {
             validity = now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
         }
+        long instant = LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
 
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -98,8 +105,9 @@ public class AuthenticateController {
             .subject(authentication.getName())
             .claim(SecurityUtils.AUTHORITIES_KEY, authorities)
             .claim("userId", userId)
+            .claim("creationTimeStamp", instant)
             .build();
-
+        redisService.saveToCustomCacheWithTTL("tokenManager",userId,instant,24,TimeUnit.HOURS);
         JwsHeader jwsHeader = JwsHeader.with(SecurityUtils.JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
     }
