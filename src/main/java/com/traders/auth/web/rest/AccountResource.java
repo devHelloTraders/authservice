@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+import static com.traders.auth.web.rest.model.ManagedUserVM.PASSWORD_MAX_LENGTH;
+import static com.traders.auth.web.rest.model.ManagedUserVM.PASSWORD_MIN_LENGTH;
+
 /**
  * REST controller for managing the current user's account.
  */
@@ -54,11 +57,11 @@ public class AccountResource {
      * @param managedUserVM the managed user View Model.
      * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
      */
-    @PostMapping("/register")
+    @PostMapping("/open/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
         if (isPasswordLengthInvalid(managedUserVM.getPassword())) {
-            throw new InvalidPasswordException();
+            throw new InvalidPasswordException("");
         }
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
         //mailService.sendActivationEmail(user);
@@ -129,9 +132,19 @@ public class AccountResource {
     @PostMapping(path = "/account/change-password")
     public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
         if (isPasswordLengthInvalid(passwordChangeDto.getNewPassword())) {
-            throw new InvalidPasswordException();
+            throw new InvalidPasswordException(String.format(
+                    "Password must be at least %d characters long and maximum %d long",PASSWORD_MIN_LENGTH,PASSWORD_MAX_LENGTH));
         }
         userService.changePassword(passwordChangeDto.getCurrentPassword(), passwordChangeDto.getNewPassword());
+    }
+
+    @PostMapping(path = "/account/change-transaction-password")
+    public void changeTransactionPassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
+        if (isPasswordLengthInvalid(passwordChangeDto.getNewPassword())) {
+            throw new InvalidPasswordException(String.format(
+                    "Password must be at least %d characters long and maximum %d long",PASSWORD_MIN_LENGTH,PASSWORD_MAX_LENGTH));
+        }
+        userService.changeTransactionPassword(passwordChangeDto.getCurrentPassword(), passwordChangeDto.getNewPassword());
     }
 
     /**
@@ -161,7 +174,8 @@ public class AccountResource {
     @PostMapping(path = "/account/reset-password/finish")
     public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
         if (isPasswordLengthInvalid(keyAndPassword.getNewPassword())) {
-            throw new InvalidPasswordException();
+            throw new InvalidPasswordException(String.format(
+                    "Password must be at least %d characters long and maximum %d long",PASSWORD_MIN_LENGTH,PASSWORD_MAX_LENGTH));
         }
         Optional<User> user = userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
@@ -173,7 +187,7 @@ public class AccountResource {
     private static boolean isPasswordLengthInvalid(String password) {
         return (
             StringUtils.isEmpty(password) ||
-            password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
+            password.length() < PASSWORD_MIN_LENGTH ||
             password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
         );
     }

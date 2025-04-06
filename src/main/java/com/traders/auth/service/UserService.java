@@ -1,5 +1,6 @@
 package com.traders.auth.service;
 
+import com.traders.auth.exception.ContactNoAlreadyUsedException;
 import com.traders.common.appconfig.util.RandomUtil;
 import com.traders.auth.domain.Authority;
 import com.traders.auth.domain.User;
@@ -103,6 +104,13 @@ public class UserService {
                     boolean removed = removeNonActivatedUser(existingUser);
                     if (!removed) {
                         throw new EmailAlreadyUsedException();
+                    }
+                });
+        userRepository.findOneByContactNo(userDTO.getContactNo())
+                .ifPresent(existingUser -> {
+                    boolean removed = removeNonActivatedUser(existingUser);
+                    if (!removed) {
+                        throw new ContactNoAlreadyUsedException();
                     }
                 });
         User newUser = new User();
@@ -235,10 +243,27 @@ public class UserService {
                 .ifPresent(user -> {
                     String currentEncryptedPassword = user.getPassword();
                     if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
-                        throw new InvalidPasswordException();
+                        throw new InvalidPasswordException("Current password doesn't match.");
                     }
                     String encryptedPassword = passwordEncoder.encode(newPassword);
                     user.setPassword(encryptedPassword);
+                    userRepository.save(user);
+                    LOG.debug("Changed password for User: {}", user);
+                });
+    }
+
+    @Transactional
+    public void changeTransactionPassword(String currentClearTextPassword, String newPassword) {
+        SecurityUtils.getCurrentUserLogin()
+                .flatMap(userRepository::findOneByLogin)
+                .ifPresent(user -> {
+                    String currentTransactionPassword = user.getTransactionPassword();
+                    if (!passwordEncoder.matches(currentClearTextPassword, currentTransactionPassword)) {
+                        throw new InvalidPasswordException("Current password doesn't match.");
+                    }
+                    String encryptedPassword = passwordEncoder.encode(newPassword);
+                    user.setTransactionPassword(encryptedPassword);
+                    userRepository.save(user);
                     LOG.debug("Changed password for User: {}", user);
                 });
     }

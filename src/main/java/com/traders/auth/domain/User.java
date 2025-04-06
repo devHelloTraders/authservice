@@ -83,6 +83,8 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     private String contactNo;
 
+    private String transactionPassword;
+
     public Long getId() {
         return id;
     }
@@ -178,6 +180,14 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     public void setContactNo(String contactNo) {
         this.contactNo = contactNo;
+    }
+
+    public String getTransactionPassword() {
+        return transactionPassword;
+    }
+
+    public void setTransactionPassword(String transactionPassword) {
+        this.transactionPassword = transactionPassword;
     }
 
     @Override

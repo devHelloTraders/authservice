@@ -19,17 +19,23 @@ public class EnquiryService {
     }
 
     public void addEnquiry(AddEnquiryRequest addEnquiryRequest) {
-        if(Strings.isNullOrEmpty(addEnquiryRequest.name()))
-            throw new BadRequestAlertException("Name is required","Enquiry Service","Name is required");
-        if(Strings.isNullOrEmpty(addEnquiryRequest.contactNo()))
-            throw new BadRequestAlertException("Contact No is required","Enquiry Service","Contact No is required");
-        if(Strings.isNullOrEmpty(addEnquiryRequest.message()))
-            throw new BadRequestAlertException("Message is required","Enquiry Service","Message is required");
+        validateEnquiryRequest(addEnquiryRequest);
         Enquiry enquiry = new Enquiry();
         enquiry.setName(addEnquiryRequest.name());
         enquiry.setContactNo(addEnquiryRequest.contactNo());
         enquiry.setMessage(addEnquiryRequest.message());
         enquiry.setCreatedDatetime(DateTimeUtil.getCurrentDateTime());
         enquiryRepository.save(enquiry);
+    }
+
+    private void validateEnquiryRequest(AddEnquiryRequest addEnquiryRequest) {
+        if(Strings.isNullOrEmpty(addEnquiryRequest.name()))
+            throw new BadRequestAlertException("Name is required","Enquiry Service","Name is required");
+        if(Strings.isNullOrEmpty(addEnquiryRequest.contactNo()))
+            throw new BadRequestAlertException("Contact No is required","Enquiry Service","Contact No is required");
+        if(Strings.isNullOrEmpty(addEnquiryRequest.message()))
+            throw new BadRequestAlertException("Message is required","Enquiry Service","Message is required");
+        if(addEnquiryRequest.contactNo().length() < 10)
+            throw new BadRequestAlertException("Invalid Contact No","Enquiry Service","Invalid Contact No");
     }
 }
