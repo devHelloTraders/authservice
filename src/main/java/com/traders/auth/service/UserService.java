@@ -45,11 +45,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuthorityRepository authorityRepository;
+    private final WalletService walletService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthorityRepository authorityRepository,
+                       WalletService walletService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.walletService = walletService;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -128,9 +133,11 @@ public class UserService {
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
-        userRepository.save(newUser);
+
+        User registeredUser = userRepository.save(newUser);
+        walletService.createUserWallet(registeredUser);
         LOG.debug("Created Information for User: {}", newUser);
-        return newUser;
+        return registeredUser;
     }
 
     private boolean removeNonActivatedUser(User existingUser) {
