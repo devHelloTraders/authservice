@@ -71,6 +71,8 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Column(name = "reset_date")
     private Instant resetDate = null;
 
+    private String fcmToken = null;
+
     @JsonIgnore
     @ManyToMany
     @JoinTable(

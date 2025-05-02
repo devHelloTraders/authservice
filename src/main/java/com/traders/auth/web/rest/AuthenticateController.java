@@ -1,7 +1,9 @@
 package com.traders.auth.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 import com.nimbusds.jose.util.Pair;
+import com.traders.auth.repository.UserRepository;
 import com.traders.auth.security.CustomUserDetails;
 import com.traders.auth.service.RedisService;
 import com.traders.auth.web.rest.model.LoginVM;
@@ -51,11 +53,13 @@ public class AuthenticateController {
     private long tokenValidityInSecondsForRememberMe;
     private final RedisService redisService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final UserRepository userRepository;
 
-    public AuthenticateController(JwtEncoder jwtEncoder, RedisService redisService, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthenticateController(JwtEncoder jwtEncoder, RedisService redisService, AuthenticationManagerBuilder authenticationManagerBuilder, UserRepository userRepository) {
         this.jwtEncoder = jwtEncoder;
         this.redisService = redisService;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/authenticate")
@@ -67,6 +71,12 @@ public class AuthenticateController {
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        if(!Strings.isNullOrEmpty(loginVM.getFcmToken())) {
+            CustomUserDetails userDetails= (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            userRepository.updateFcmToken(userId, loginVM.getFcmToken());
+        }
         String jwt = this.createToken(authentication, loginVM.isRememberMe());
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setBearerAuth(jwt);

@@ -16,6 +16,8 @@ public class LoginVM {
     @Size(min = 4, max = 100)
     private String password;
 
+    private String fcmToken;
+
     private boolean rememberMe;
 
     public String getUsername() {
@@ -40,6 +42,14 @@ public class LoginVM {
 
     public void setRememberMe(boolean rememberMe) {
         this.rememberMe = rememberMe;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     // prettier-ignore

@@ -7,10 +7,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 
 public class CustomUserDetails implements UserDetails {
+    private final Long id;
     private final String userId;
     private final User user;  // This is Spring's User class
 
-    public CustomUserDetails(String userId, User user) {
+    public CustomUserDetails(Long id, String userId, User user) {
+        this.id = id;
         this.userId = userId;
         this.user = user;
     }
@@ -52,5 +54,9 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return user.isEnabled();
+    }
+
+    public Long getId() {
+        return id;
     }
 }

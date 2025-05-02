@@ -63,6 +63,6 @@ public class UserAuthenticationService implements UserDetailsService {
             .map(SimpleGrantedAuthority::new)
             .toList();
         var userDetails = new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);
-        return new CustomUserDetails(EncryptionUtil.encrypt(user.getId().toString()),userDetails);
+        return new CustomUserDetails(user.getId(),EncryptionUtil.encrypt(user.getId().toString()),userDetails);
     }
 }
