@@ -17,4 +17,5 @@ public class Enquiry {
     private String contactNo;
     private String message;
     private String createdDatetime;
+    private String ipAddress;
 }

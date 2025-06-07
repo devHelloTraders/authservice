@@ -18,13 +18,14 @@ public class EnquiryService {
         this.enquiryRepository = enquiryRepository;
     }
 
-    public void addEnquiry(AddEnquiryRequest addEnquiryRequest) {
+    public void addEnquiry(AddEnquiryRequest addEnquiryRequest,String ipAddress) {
         validateEnquiryRequest(addEnquiryRequest);
         Enquiry enquiry = new Enquiry();
         enquiry.setName(addEnquiryRequest.name());
         enquiry.setContactNo(addEnquiryRequest.contactNo());
         enquiry.setMessage(addEnquiryRequest.message());
         enquiry.setCreatedDatetime(DateTimeUtil.getCurrentDateTime());
+        enquiry.setIpAddress(ipAddress);
         enquiryRepository.save(enquiry);
     }
 
