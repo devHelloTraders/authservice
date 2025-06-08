@@ -2,7 +2,6 @@ package com.traders.auth.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import com.nimbusds.jose.util.Pair;
 import com.traders.auth.domain.User;
 import com.traders.auth.repository.UserRepository;
 import com.traders.auth.security.CustomUserDetails;
@@ -10,7 +9,6 @@ import com.traders.auth.service.RedisService;
 import com.traders.auth.web.rest.model.LoginVM;
 import com.traders.auth.web.rest.model.PasswordRecord;
 import com.traders.common.security.SecurityUtils;
-import com.traders.common.utils.UserIdSupplier;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +22,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -35,7 +34,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -58,12 +56,14 @@ public class AuthenticateController {
     private final RedisService redisService;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthenticateController(JwtEncoder jwtEncoder, RedisService redisService, AuthenticationManagerBuilder authenticationManagerBuilder, UserRepository userRepository) {
+    public AuthenticateController(JwtEncoder jwtEncoder, RedisService redisService, AuthenticationManagerBuilder authenticationManagerBuilder, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.jwtEncoder = jwtEncoder;
         this.redisService = redisService;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/authenticate")
@@ -89,9 +89,8 @@ public class AuthenticateController {
 
     @PostMapping("/client/authenticate")
     public ResponseEntity<Boolean> authorize(@RequestBody PasswordRecord passwordRecord) {
-        Long userId = UserIdSupplier.getUserId();
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = SecurityUtils.getCurrentUserLogin()
+                .flatMap(userRepository::findOneByLogin).get();
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 user.getLogin(),
@@ -100,9 +99,20 @@ public class AuthenticateController {
 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        return ResponseEntity.ok(true);
+    }
 
-        CustomUserDetails userDetails= (CustomUserDetails) authentication.getPrincipal();
-        return ResponseEntity.ok(Objects.equals(userDetails.getId(), userId));
+    @PostMapping("/authenticate/transaction-password")
+    public ResponseEntity<Boolean> verifyTransactionPassword(@RequestBody PasswordRecord passwordRecord) {
+        User user = SecurityUtils.getCurrentUserLogin()
+                .flatMap(userRepository::findOneByLogin).get();
+
+        boolean isValid = passwordEncoder.matches(
+                passwordRecord.password(),
+                user.getTransactionPassword()
+        );
+
+        return ResponseEntity.ok(isValid);
     }
 
 
