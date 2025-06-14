@@ -58,6 +58,8 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Column(nullable = false)
     private boolean activated = false;
 
+    private int deleteFlag;
+
     @Size(max = 20)
     @Column(name = "activation_key", length = 20)
     @JsonIgnore
@@ -190,6 +192,14 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     public void setTransactionPassword(String transactionPassword) {
         this.transactionPassword = transactionPassword;
+    }
+
+    public int getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public void setDeleteFlag(int deleteFlag) {
+        this.deleteFlag = deleteFlag;
     }
 
     @Override
