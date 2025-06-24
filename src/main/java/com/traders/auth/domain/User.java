@@ -1,5 +1,6 @@
 package com.traders.auth.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.traders.common.constants.AppConstants;
 import jakarta.persistence.*;
@@ -85,9 +86,16 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
 
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name="parent_user_id")
+    private User parentUser;
+
     private String contactNo;
 
     private String transactionPassword;
+
+    private int parentAccount;
 
     public Long getId() {
         return id;
@@ -200,6 +208,14 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     public void setDeleteFlag(int deleteFlag) {
         this.deleteFlag = deleteFlag;
+    }
+
+    public User getParentUser() {
+        return parentUser;
+    }
+
+    public void setParentUser(User parentUser) {
+        this.parentUser = parentUser;
     }
 
     @Override

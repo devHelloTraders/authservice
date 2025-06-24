@@ -1,12 +1,10 @@
 package com.traders.auth.service;
 
-import com.traders.auth.exception.ContactNoAlreadyUsedException;
+import com.google.common.base.Strings;
+import com.traders.auth.exception.*;
 import com.traders.common.appconfig.util.RandomUtil;
 import com.traders.auth.domain.Authority;
 import com.traders.auth.domain.User;
-import com.traders.auth.exception.EmailAlreadyUsedException;
-import com.traders.auth.exception.InvalidPasswordException;
-import com.traders.auth.exception.UsernameAlreadyUsedException;
 import com.traders.auth.repository.AuthorityRepository;
 import com.traders.auth.repository.UserRepository;
 import com.traders.auth.service.dto.AdminUserDTO;
@@ -118,18 +116,21 @@ public class UserService {
                         throw new ContactNoAlreadyUsedException();
                     }
                 });
+        User parentUser = userRepository.findOneByParentAccount(1).
+                orElseThrow(ParentUserNotDefinedException::new);
         User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setLogin(userDTO.getLogin().toLowerCase());
         newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userDTO.getFirstName());
         newUser.setLastName(userDTO.getLastName());
-        if (userDTO.getEmail() != null) {
+        if (!Strings.isNullOrEmpty(userDTO.getEmail())) {
             newUser.setEmail(userDTO.getEmail().toLowerCase());
         }
         newUser.setActivated(true);
         newUser.setContactNo(userDTO.getContactNo());
         newUser.setActivationKey(RandomUtil.generateActivationKey());
+        newUser.setParentUser(parentUser);
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);

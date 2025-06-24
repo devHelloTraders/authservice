@@ -26,6 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findOneByEmailIgnoreCase(String email);
     Optional<User> findOneByContactNo(String contactNo);
     Optional<User> findOneByLogin(String login);
+    Optional<User> findOneByParentAccount(int parentAccount);
 
     @EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesByLogin(String login);
@@ -39,5 +40,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query("UPDATE User u SET u.fcmToken = :fcmToken WHERE u.id = :userId")
     void updateFcmToken(@Param("userId") Long userId, @Param("fcmToken") String fcmToken);
+
+
 
 }
